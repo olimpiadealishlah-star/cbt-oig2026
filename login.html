@@ -11,28 +11,115 @@
     <script src="js/supabase-client.js"></script>
     <script src="js/iframe-guard.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/auth.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f3f22 0%, #1e6c3a 50%, #2bb864 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+        .modern-input {
+            width: 100%;
+            background: #f1f5f9;
+            border: 2px solid transparent;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            color: #1e293b;
+        }
+        .modern-input:focus {
+            border-color: #1e6c3a;
+            box-shadow: 0 0 0 4px rgba(30, 108, 58, 0.15);
+            outline: none;
+            background: #ffffff;
+        }
+        .btn-modern {
+            background: linear-gradient(to right, #1e6c3a, #114223);
+            border: none;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(30, 108, 58, 0.3);
+        }
+        .btn-modern:disabled {
+            background: #94a3b8;
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-    <div style="display:flex; height: 100vh; align-items:center; justify-content:center;">
-        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-            <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 60px;">
-                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 60px;">
+    <div class="login-container">
+        <div class="glass-card">
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+                <div style="background: white; padding: 8px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 55px;">
+                </div>
+                <div style="background: white; padding: 8px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 55px;">
+                </div>
             </div>
-            <h2 class="text-primary mb-1">Olimpiade Al Ishlah</h2>
-            <p class="text-light mb-3">Portal Ujian CBT</p>
+            <h2 style="color: #0f3f22; margin: 0 0 5px 0; font-weight: 700; font-size: 1.5rem;">Olimpiade Al Ishlah</h2>
+            <p style="color: #64748b; margin: 0 0 30px 0; font-size: 1rem;">Portal Ujian CBT 2026</p>
             
             <form id="login-form">
-                <div class="form-group">
+                <div class="input-group">
                     <label>Username</label>
-                    <input type="text" id="username" class="form-control" required autocomplete="username">
+                    <input type="text" id="username" class="modern-input" placeholder="Masukkan username" required autocomplete="username">
                 </div>
-                <div class="form-group">
+                <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="password" class="form-control" required autocomplete="current-password">
+                    <input type="password" id="password" class="modern-input" placeholder="Masukkan password" required autocomplete="current-password">
                 </div>
-                <div id="login-error" class="text-danger mb-2" style="font-size: 0.9rem;"></div>
-                <button type="submit" class="btn btn-primary btn-block" id="btn-login">Mulai Sesi</button>
+                <div id="login-error" class="text-danger mb-3" style="font-size: 0.9rem; min-height: 20px;"></div>
+                <button type="submit" class="btn-modern" id="btn-login">Mulai Sesi Ujian</button>
             </form>
         </div>
     </div>
@@ -40,7 +127,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const token = window.cbtAuth.getToken();
-            if (token) window.location.href = 'lobby.html';
+            if (token) window.location.href = 'panduan.html';
 
             document.getElementById('login-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -58,11 +145,11 @@
                 setTimeout(async () => {
                     const res = await window.cbtAuth.login(u, p);
                     if (res && res.success) {
-                        window.location.href = 'lobby.html';
+                        window.location.href = 'panduan.html';
                     } else {
                         err.textContent = res ? res.message : "Kesalahan server.";
                         btn.disabled = false;
-                        btn.textContent = 'Mulai Sesi';
+                        btn.textContent = 'Mulai Sesi Ujian';
                     }
                 }, jitter);
             });
