@@ -12,29 +12,43 @@
         :root {
             --primary: #0F5A3E; 
             --secondary: #D4AF37; 
-            --bg: #F5F7F6;
-            --surface: #FFFFFF;
-            --text-light: #7F8C8D;
+            --bg: #0B1120;
+            --surface: #1E293B;
+            --surface-hover: #334155;
+            --text-light: #94A3B8;
+            --text-main: #F8FAFC;
         }
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
-            margin: 0; padding: 2rem;
-            color: #2C3E50;
+            background-image: radial-gradient(circle at top, rgba(15,90,62,0.15) 0%, rgba(11,17,32,1) 60%);
+            margin: 0; 
+            padding: 2rem;
+            color: var(--text-main);
+            min-height: 100vh;
         }
         .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .header h1 {
-            color: var(--primary);
+            color: #E2E8F0;
             margin: 0 0 0.5rem 0;
-            font-size: 3rem;
+            font-size: 3.5rem;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
         .header h3 {
             color: var(--secondary);
             margin: 0;
             font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
         }
         .scoreboard-container {
             display: grid;
@@ -42,66 +56,88 @@
             gap: 2rem;
             max-width: 1400px;
             margin: 0 auto;
+            padding-bottom: 60px;
         }
         .cabang-card {
-            background: var(--surface);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
             overflow: hidden;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.9;
         }
         .cabang-card.active-focus {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 32px rgba(15, 90, 62, 0.15);
+            transform: scale(1.03) translateY(-10px);
+            box-shadow: 0 30px 60px rgba(15, 90, 62, 0.3);
             border: 2px solid var(--secondary);
+            opacity: 1;
+            z-index: 10;
         }
         .cabang-header {
-            background: var(--primary);
+            background: linear-gradient(90deg, #0F5A3E, #1a7f5a);
             color: white;
-            padding: 1rem;
+            padding: 1.2rem;
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .table-wrap {
-            padding: 1rem;
+            padding: 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
         th, td {
-            padding: 1rem;
+            padding: 1rem 1.5rem;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
         }
         th {
             color: var(--text-light);
             text-transform: uppercase;
             font-size: 0.85rem;
+            letter-spacing: 1px;
+            background: rgba(0,0,0,0.2);
         }
-        tr:nth-child(1) td:nth-child(1) { color: #FFD700; font-weight: bold; font-size: 1.2rem; }
-        tr:nth-child(2) td:nth-child(1) { color: #C0C0C0; font-weight: bold; font-size: 1.1rem; }
-        tr:nth-child(3) td:nth-child(1) { color: #CD7F32; font-weight: bold; font-size: 1.1rem; }
+        tr:nth-child(1) td { background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent); }
+        tr:nth-child(2) td { background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), transparent); }
+        tr:nth-child(3) td { background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), transparent); }
+        
+        tr:nth-child(1) td:nth-child(1) { color: #FFD700; font-size: 1.5rem; }
+        tr:nth-child(2) td:nth-child(1) { color: #C0C0C0; font-size: 1.4rem; }
+        tr:nth-child(3) td:nth-child(1) { color: #CD7F32; font-size: 1.4rem; }
+        
         .score-val {
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 1.2rem;
+            font-weight: 800;
+            color: #4ade80;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
         }
         .status-bar {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: var(--primary);
+            background: rgba(15, 90, 62, 0.9);
+            backdrop-filter: blur(10px);
             color: white;
-            padding: 0.5rem 2rem;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             font-size: 0.9rem;
-            z-index: 10;
+            z-index: 20;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         
-        @media(max-width: 900px) {
+        @media(max-width: 1024px) {
             .scoreboard-container { grid-template-columns: 1fr; }
+            .cabang-card.active-focus { transform: scale(1.01) translateY(-5px); }
         }
     </style>
 </head>
