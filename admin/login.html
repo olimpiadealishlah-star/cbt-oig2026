@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - Olimpiade Al Ishlah</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/supabase-client.js"></script>
+    <script src="../js/admin-auth.js" defer></script>
+</head>
+<body class="admin-login-body">
+    <div class="login-container card">
+        <div class="login-header">
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 50px;">
+                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 50px;">
+            </div>
+            <h2>Admin Panel CBT</h2>
+            <p>Olimpiade Al Ishlah Gorontalo</p>
+        </div>
+        <form id="admin-login-form">
+            <div class="form-group">
+                <label>Username / Email Admin</label>
+                <input type="text" id="email" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            <div id="login-message" class="error-text"></div>
+            <button type="submit" class="btn btn-primary btn-block" id="btn-login">Masuk</button>
+        </form>
+    </div>
+</body>
+</html>

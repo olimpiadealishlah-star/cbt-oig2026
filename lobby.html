@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lobby Ujian - CBT Al Ishlah</title>
+    <link rel="stylesheet" href="css/cbt.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/iframe-guard.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; gap: 10px;">
+                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 40px;">
+                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 40px;">
+            </div>
+            <h2 style="margin: 0; font-size: 1.25rem;">Olimpiade Al Ishlah</h2>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <span id="peserta-nama" style="margin-right: 15px; font-weight: 500;">...</span>
+            <button class="btn btn-outline" style="padding: 0.4rem 1rem; border-color: white; color: white;" onclick="window.cbtAuth.logout()">Keluar</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <h3 class="text-primary mb-3">Persiapan Ujian</h3>
+            
+            <div style="text-align: left; background: var(--bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <p><strong>Cabang:</strong> <span id="peserta-cabang">...</span></p>
+                <p><strong>Asal Sekolah:</strong> <span id="peserta-sekolah">...</span></p>
+                <p><strong>Durasi:</strong> <span id="info-durasi">...</span> Menit</p>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 1rem 0;">
+                <p style="font-size: 0.9rem; color: var(--text-light);">* Ujian ini menggunakan mode layar penuh (fullscreen). Keluar dari layar penuh atau berpindah tab akan dicatat sebagai pelanggaran oleh sistem.</p>
+            </div>
+
+            <div id="tes-perangkat" class="mb-3 text-left">
+                <!-- Status koneksi dan fullscreen dicek disini -->
+                <p>⌛ Memeriksa kesiapan perangkat...</p>
+            </div>
+
+            <button id="btn-mulai" class="btn btn-primary btn-block" style="font-size: 1.2rem; display: none;">Mulai Ujian Sekarang</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const data = await window.cbtAuth.checkLobbyAccess();
+            if (!data) return;
+
+            const p = data.peserta;
+            if (p.status === 'mengerjakan') {
+                window.location.href = 'exam.html';
+                return;
+            } else if (p.status === 'selesai') {
+                window.location.href = 'selesai.html';
+                return;
+            } else if (p.status === 'terkunci') {
+                alert("Akun Anda terkunci. Hubungi pengawas.");
+                window.cbtAuth.logout();
+                return;
+            }
+
+            document.getElementById('peserta-nama').textContent = p.nama;
+            document.getElementById('peserta-cabang').textContent = p.cabang;
+            document.getElementById('peserta-sekolah').textContent = p.asal_sekolah;
+            
+            const durasi = data.config.durasi[p.cabang] || 120;
+            document.getElementById('info-durasi').textContent = durasi;
+
+            // Tes Perangkat
+            const tesBox = document.getElementById('tes-perangkat');
+            let isReady = true;
+            let tesHtml = '<ul style="text-align: left; list-style:none; padding:0;">';
+            
+            // Cek Storage
+            try {
+                sessionStorage.setItem('tes', '1');
+                sessionStorage.removeItem('tes');
+                tesHtml += '<li style="color: var(--success); margin-bottom: 0.5rem;">✔ Penyimpanan browser berfungsi</li>';
+            } catch(e) {
+                tesHtml += '<li style="color: var(--danger); margin-bottom: 0.5rem;">✖ Penyimpanan browser (sessionStorage) diblokir. Harap buka di tab penuh atau nonaktifkan mode Private/Incognito.</li>';
+                isReady = false;
+            }
+
+            // Cek iframe fullscreen (soft check)
+            if (window.self !== window.top) {
+                if (document.fullscreenEnabled === false) {
+                    tesHtml += '<li style="color: var(--danger); margin-bottom: 0.5rem;">✖ Mode layar penuh diblokir oleh website. Klik tombol di bawah untuk buka di tab penuh.</li>';
+                    tesHtml += `<li style="margin-top:10px;"><a href="${window.location.href}" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1rem;">Buka di Tab Penuh</a></li>`;
+                    isReady = false;
+                } else {
+                    tesHtml += '<li style="color: var(--success); margin-bottom: 0.5rem;">✔ Mode layar penuh didukung di frame ini</li>';
+                }
+            } else {
+                tesHtml += '<li style="color: var(--success); margin-bottom: 0.5rem;">✔ Akses tab penuh (Sangat direkomendasikan)</li>';
+            }
+
+            tesHtml += '</ul>';
+            tesBox.innerHTML = tesHtml;
+
+            const btnMulai = document.getElementById('btn-mulai');
+            if (isReady) {
+                btnMulai.style.display = 'block';
+            }
+
+            btnMulai.addEventListener('click', async () => {
+                btnMulai.disabled = true;
+                btnMulai.textContent = 'Memproses...';
+                
+                // Coba masuk fullscreen dulu
+                const fsSuccess = await window.requestFullscreenSafe(document.documentElement);
+                if (!fsSuccess && window.self !== window.top) {
+                    alert("Tidak dapat memasuki layar penuh. Harap klik 'Buka di Tab Penuh' terlebih dahulu.");
+                    btnMulai.disabled = false;
+                    btnMulai.textContent = 'Mulai Ujian Sekarang';
+                    return;
+                }
+
+                // Jitter
+                setTimeout(async () => {
+                    const token = window.cbtAuth.getToken();
+                    const { data: res, error } = await supabaseClient.rpc('mulai_ujian', { p_token: token });
+                    
+                    if (error) {
+                        alert("Gagal memulai ujian: " + error.message);
+                        btnMulai.disabled = false;
+                        btnMulai.textContent = 'Mulai Ujian Sekarang';
+                    } else if (res.success) {
+                        window.location.href = 'exam.html';
+                    } else {
+                        alert(res.message);
+                        if (res.message.includes('terkunci')) window.cbtAuth.logout();
+                        else { btnMulai.disabled = false; btnMulai.textContent = 'Mulai Ujian Sekarang'; }
+                    }
+                }, Math.floor(Math.random() * 800));
+            });
+        });
+    </script>
+</body>
+</html>

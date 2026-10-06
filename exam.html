@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ujian CBT - Al Ishlah</title>
+    <link rel="stylesheet" href="css/cbt.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/iframe-guard.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Modul keamanan (Anti Cheat) -->
+    <script src="js/security.js"></script>
+</head>
+<body>
+    <div class="watermark" id="watermark"></div>
+    <div class="header-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; gap: 10px;">
+                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 40px;">
+                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 40px;">
+            </div>
+            <strong>Olimpiade Al Ishlah CBT</strong>
+        </div>
+        <div style="text-align: right;">
+            <span id="peserta-nama">Memuat...</span> | <span id="peserta-cabang"></span>
+        </div>
+    </div>
+
+    <div class="exam-layout">
+        <!-- Area Soal (Kiri) -->
+        <main class="soal-area">
+            <h3 class="text-primary" style="margin-bottom: 1rem;">Soal No. <span id="soal-aktif-no">1</span></h3>
+            <div id="soal-container" class="latex-render">
+                <div class="soal-text" id="teks-soal">Memuat soal...</div>
+                <img id="gambar-soal" class="soal-img" style="display:none;" alt="Gambar Soal">
+                
+                <div class="opsi-list" id="opsi-container">
+                    <!-- Opsi diload via JS -->
+                </div>
+            </div>
+
+            <div class="exam-controls">
+                <button class="btn btn-outline" id="btn-prev">⬅ Sebelumnya</button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="cb-ragu" style="width: 20px; height: 20px; cursor: pointer;">
+                    <label for="cb-ragu" style="font-weight: 500; cursor: pointer;">Ragu-ragu</label>
+                    <span id="status-simpan" style="font-size: 0.85rem; color: var(--text-light); margin-left: 10px;"></span>
+                </div>
+                <button class="btn btn-primary" id="btn-next">Berikutnya ➡</button>
+            </div>
+        </main>
+
+        <!-- Area Navigasi (Kanan) -->
+        <aside class="nav-panel">
+            <div class="timer-box" id="timer-box">
+                <div style="font-weight: 500; color: var(--text-light); margin-bottom: 0.5rem;">SISA WAKTU</div>
+                <div class="timer-text" id="timer-display">--:--:--</div>
+            </div>
+
+            <div class="grid-soal-box">
+                <div style="font-weight: 600; margin-bottom: 1rem; text-align: center;">Daftar Soal</div>
+                <div class="grid-container" id="grid-container">
+                    <!-- Grid Soal -->
+                </div>
+                <button class="btn btn-danger btn-block mt-3" id="btn-submit-ujian">Selesai Ujian</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modal Konfirmasi Submit -->
+    <div class="overlay" id="modal-submit">
+        <div class="modal">
+            <h2 class="text-danger mb-2">Konfirmasi Selesai Ujian</h2>
+            <p id="msg-submit" class="mb-3">Apakah Anda yakin ingin menyelesaikan ujian? Sisa waktu Anda masih ada dan soal yang belum dijawab tidak akan mendapatkan nilai.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button class="btn btn-outline" id="btn-batal-submit">Kembali ke Ujian</button>
+                <button class="btn btn-danger" id="btn-konfirm-submit">Ya, Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/exam.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Peserta - CBT Al Ishlah</title>
+    <link rel="stylesheet" href="css/cbt.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/iframe-guard.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div style="display:flex; height: 100vh; align-items:center; justify-content:center;">
+        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+            <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem;">
+                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 60px;">
+                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 60px;">
+            </div>
+            <h2 class="text-primary mb-1">Olimpiade Al Ishlah</h2>
+            <p class="text-light mb-3">Portal Ujian CBT</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="username" class="form-control" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="form-control" required autocomplete="current-password">
+                </div>
+                <div id="login-error" class="text-danger mb-2" style="font-size: 0.9rem;"></div>
+                <button type="submit" class="btn btn-primary btn-block" id="btn-login">Mulai Sesi</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = window.cbtAuth.getToken();
+            if (token) window.location.href = 'lobby.html';
+
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-login');
+                const err = document.getElementById('login-error');
+                btn.disabled = true;
+                btn.textContent = 'Memuat...';
+                err.textContent = '';
+
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+
+                // Jitter untuk mencegah lonjakan request bersamaan (thundering herd)
+                const jitter = Math.floor(Math.random() * 500);
+                setTimeout(async () => {
+                    const res = await window.cbtAuth.login(u, p);
+                    if (res && res.success) {
+                        window.location.href = 'lobby.html';
+                    } else {
+                        err.textContent = res ? res.message : "Kesalahan server.";
+                        btn.disabled = false;
+                        btn.textContent = 'Mulai Sesi';
+                    }
+                }, jitter);
+            });
+        });
+    </script>
+</body>
+</html>
