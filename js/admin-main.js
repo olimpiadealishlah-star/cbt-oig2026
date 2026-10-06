@@ -120,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${p.asal_sekolah}</td>
                     <td>${p.status}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline" onclick="resetSesi('${p.id}')">Reset Sesi</button>
+                        <button class="btn btn-sm btn-outline" onclick="resetSesi('${p.id}')" style="margin-right: 5px;">Reset Sesi</button>
+                        <button class="btn btn-sm" style="background-color: #e74c3c; color: white;" onclick="hapusPeserta('${p.id}', '${p.nama}')">Hapus</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -135,6 +136,67 @@ document.addEventListener('DOMContentLoaded', () => {
             loadPeserta();
         }
     }
+
+    window.hapusPeserta = async (id, nama) => {
+        if (confirm(`Apakah Anda yakin ingin menghapus peserta ${nama}? Seluruh skor dan jawaban mereka juga akan terhapus!`)) {
+            const { error } = await supabaseClient.from('peserta').delete().eq('id', id);
+            if (error) alert("Gagal menghapus peserta: " + error.message);
+            else {
+                alert("Peserta berhasil dihapus.");
+                loadPeserta();
+            }
+        }
+    }
+
+    // Export Excel
+    document.getElementById('btn-export-peserta').addEventListener('click', () => {
+        const table = document.getElementById('table-peserta');
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Peserta" });
+        XLSX.writeFile(wb, "Daftar_Peserta_CBT.xlsx");
+    });
+
+    // Tambah Manual
+    const modalPeserta = document.getElementById('modal-tambah-peserta');
+    document.getElementById('btn-tambah-peserta').addEventListener('click', () => {
+        modalPeserta.style.display = 'flex';
+    });
+    document.getElementById('close-modal-peserta').addEventListener('click', () => {
+        modalPeserta.style.display = 'none';
+    });
+    
+    document.getElementById('form-tambah-peserta').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-simpan-peserta');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        
+        const row = {
+            nama: document.getElementById('tambah-peserta-nama').value,
+            username: document.getElementById('tambah-peserta-username').value,
+            password: document.getElementById('tambah-peserta-password').value,
+            cabang: document.getElementById('tambah-peserta-cabang').value,
+            asal_sekolah: document.getElementById('tambah-peserta-sekolah').value
+        };
+
+        const { data, error } = await supabaseClient.rpc('admin_import_peserta', { p_rows: [row] });
+        
+        btn.disabled = false;
+        btn.textContent = 'Simpan Peserta';
+        
+        if (error) {
+            alert("Gagal menambahkan: " + error.message);
+        } else if (data && data.success && data.results) {
+            const errs = data.results.filter(r => r.status === 'error');
+            if (errs.length > 0) {
+                alert("Gagal menambahkan: " + errs[0].message);
+            } else {
+                alert("Peserta berhasil ditambahkan!");
+                modalPeserta.style.display = 'none';
+                document.getElementById('form-tambah-peserta').reset();
+                loadPeserta();
+            }
+        }
+    });
 
     // Import Peserta
     document.getElementById('file-import-peserta').addEventListener('change', async (e) => {
