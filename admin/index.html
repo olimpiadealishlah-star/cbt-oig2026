@@ -40,7 +40,7 @@
                 <li><a href="#pengaturan" class="nav-link" data-view="pengaturan">Pengaturan Ujian</a></li>
                 <li><a href="#monitoring" class="nav-link" data-view="monitoring">Monitoring Live</a></li>
                 <li><a href="#pelanggaran" class="nav-link" data-view="pelanggaran">Log Pelanggaran</a></li>
-                <li><a href="#hasil" class="nav-link" data-view="hasil">Hasil Ujian</a></li>
+                <li><a href="#hasil" class="nav-link" data-view="hasil">Hasil Tes</a></li>
                 <li><a href="#" id="btn-logout" class="nav-link text-danger">Keluar</a></li>
             </ul>
         </aside>
@@ -258,62 +258,89 @@
                 </div>
             </section>
 
-            <!-- View: Pengaturan -->
             <section id="view-pengaturan" class="view-section" style="display: none;">
-                <h2>Pengaturan Ujian</h2>
-                <div class="card">
-                    <form id="form-pengaturan">
-                        <div class="form-group">
-                            <label>Nama Event</label>
-                            <input type="text" id="cfg_nama_event" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Batas Pelanggaran (sebelum akun dikunci otomatis)</label>
-                            <input type="number" id="cfg_batas_pelanggaran" class="form-control" required min="1">
-                        </div>
-                        
-                        <div class="d-flex gap-3">
-                            <div class="form-group" style="flex:1">
-                                <label>
-                                    <input type="checkbox" id="cfg_acak_soal"> Acak Urutan Soal
-                                </label>
-                            </div>
-                            <div class="form-group" style="flex:1">
-                                <label>
-                                    <input type="checkbox" id="cfg_acak_opsi"> Acak Urutan Opsi Jawaban
-                                </label>
-                            </div>
-                            <div class="form-group" style="flex:1">
-                                <label>
-                                    <input type="checkbox" id="cfg_scoreboard"> Tampilkan Scoreboard Publik
-                                </label>
-                            </div>
-                        </div>
-
-                        <hr style="border:0; border-top:1px solid var(--border); margin: 1.5rem 0;">
-                        <h4>Durasi per Cabang (Menit)</h4>
-                        <div class="d-flex gap-3 mt-2">
-                            <div class="form-group" style="flex:1">
-                                <label>Matematika</label>
-                                <input type="number" id="cfg_dur_mat" class="form-control" required>
-                            </div>
-                            <div class="form-group" style="flex:1">
-                                <label>PAI</label>
-                                <input type="number" id="cfg_dur_pai" class="form-control" required>
-                            </div>
-                            <div class="form-group" style="flex:1">
-                                <label>IPA</label>
-                                <input type="number" id="cfg_dur_ipa" class="form-control" required>
-                            </div>
-                            <div class="form-group" style="flex:1">
-                                <label>Bahasa Inggris</label>
-                                <input type="number" id="cfg_dur_ing" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary mt-3" id="btn-simpan-pengaturan">Simpan Pengaturan</button>
-                    </form>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2>Pengaturan Ujian</h2>
                 </div>
+                <form id="form-pengaturan">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                        <!-- Kolom Kiri -->
+                        <div class="card" style="flex: 1 1 45%; min-width: 300px; margin-bottom: 0;">
+                            <h4 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; color: var(--primary);">Pengaturan Umum</h4>
+                            
+                            <div class="form-group mb-3">
+                                <label style="font-weight: 600;">Nama Event</label>
+                                <input type="text" id="cfg_nama_event" class="form-control" placeholder="Contoh: Olimpiade Al Ishlah 2026" required>
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label style="font-weight: 600;">Batas Pelanggaran (Peringatan)</label>
+                                <input type="number" id="cfg_batas_pelanggaran" class="form-control" required min="1">
+                                <small style="color: #7f8c8d; display: block; margin-top: 5px;">Jika peserta keluar dari layar penuh melebihi batas ini, akun akan otomatis terkunci.</small>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border);">
+                                    <input type="checkbox" id="cfg_acak_soal" style="width: 18px; height: 18px; cursor: pointer;"> 
+                                    <span style="font-weight: 500;">Acak Urutan Soal (Setiap Peserta Berbeda)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border);">
+                                    <input type="checkbox" id="cfg_acak_opsi" style="width: 18px; height: 18px; cursor: pointer;"> 
+                                    <span style="font-weight: 500;">Acak Urutan Opsi Jawaban (A-E)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 12px; background: var(--bg); padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border);">
+                                    <input type="checkbox" id="cfg_scoreboard" style="width: 18px; height: 18px; cursor: pointer;"> 
+                                    <span style="font-weight: 500;">Tampilkan Scoreboard Publik (Live Ranking)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Kolom Kanan -->
+                        <div class="card" style="flex: 1 1 45%; min-width: 300px; margin-bottom: 0;">
+                            <h4 style="border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; color: var(--primary);">Sistem Penilaian & Durasi</h4>
+                            
+                            <label style="font-weight: 600; display: block; margin-bottom: 10px;">Poin Penilaian</label>
+                            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.9rem; color: var(--success);">Jawaban Benar</label>
+                                    <input type="number" id="cfg_skor_benar" class="form-control" style="font-weight: bold; border-color: var(--success);" value="3" required>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.9rem; color: var(--danger);">Jawaban Salah</label>
+                                    <input type="number" id="cfg_skor_salah" class="form-control" style="font-weight: bold; border-color: var(--danger);" value="0" required>
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label style="font-size: 0.9rem; color: #7f8c8d;">Kosong</label>
+                                    <input type="number" id="cfg_skor_kosong" class="form-control" style="font-weight: bold; border-color: #bdc3c7;" value="0" required>
+                                </div>
+                            </div>
+
+                            <label style="font-weight: 600; display: block; margin-bottom: 10px;">Durasi Pengerjaan (Menit)</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                <div class="form-group" style="flex: 1 1 40%;">
+                                    <label style="font-size: 0.9rem;">Matematika</label>
+                                    <input type="number" id="cfg_dur_mat" class="form-control" value="60" required>
+                                </div>
+                                <div class="form-group" style="flex: 1 1 40%;">
+                                    <label style="font-size: 0.9rem;">PAI</label>
+                                    <input type="number" id="cfg_dur_pai" class="form-control" value="60" required>
+                                </div>
+                                <div class="form-group" style="flex: 1 1 40%;">
+                                    <label style="font-size: 0.9rem;">IPA Terpadu</label>
+                                    <input type="number" id="cfg_dur_ipa" class="form-control" value="60" required>
+                                </div>
+                                <div class="form-group" style="flex: 1 1 40%;">
+                                    <label style="font-size: 0.9rem;">Bahasa Inggris</label>
+                                    <input type="number" id="cfg_dur_ing" class="form-control" value="60" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary" id="btn-simpan-pengaturan" style="padding: 12px 30px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">Simpan Semua Pengaturan</button>
+                    </div>
+                </form>
             </section>
 
             <!-- View: Monitoring -->
@@ -383,7 +410,7 @@
 
             <!-- View: Hasil Ujian -->
             <section id="view-hasil" class="view-section" style="display: none;">
-                <h2>Hasil Ujian</h2>
+                <h2>Hasil Tes</h2>
                 <div class="card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex gap-2">
