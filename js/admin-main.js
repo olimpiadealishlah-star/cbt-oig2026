@@ -146,18 +146,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                // Convert all keys to lowercase to avoid case-sensitivity issues from CSV headers
+                const json = rawJson.map(row => {
+                    let lowerRow = {};
+                    for (let key in row) {
+                        lowerRow[key.toLowerCase().trim()] = row[key];
+                    }
+                    return lowerRow;
+                });
                 
                 // Panggil RPC batch import
                 // Chunk per 50 to avoid payload limits
                 let successCount = 0;
+                let errorMessages = [];
                 for (let i = 0; i < json.length; i += 50) {
                     const chunk = json.slice(i, i + 50);
                     const { data: rpcData, error } = await supabaseClient.rpc('admin_import_peserta', { p_rows: chunk });
                     if (error) throw error;
-                    if (rpcData.success) successCount += chunk.length;
+                    if (rpcData.success && rpcData.results) {
+                        const successItems = rpcData.results.filter(r => r.status === 'ok');
+                        successCount += successItems.length;
+                        const errs = rpcData.results.filter(r => r.status === 'error');
+                        if (errs.length > 0) {
+                            errorMessages.push(errs[0].message);
+                            console.error(errs);
+                        }
+                    }
                 }
-                alert(`Import berhasil: ${successCount} peserta dimasukkan.`);
+                
+                if (errorMessages.length > 0) {
+                    alert(`Import berhasil: ${successCount} peserta dimasukkan.\nNamun ada gagal: ${errorMessages[0]}`);
+                } else {
+                    alert(`Import berhasil: ${successCount} peserta dimasukkan.`);
+                }
                 loadPeserta();
             } catch (err) {
                 console.error(err);
