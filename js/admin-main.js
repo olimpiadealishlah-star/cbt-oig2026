@@ -64,10 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('cfg_scoreboard').checked = config.scoreboard_publik ?? true;
             
             if (config.durasi) {
-                document.getElementById('cfg_dur_mat').value = config.durasi['Matematika'] || 120;
-                document.getElementById('cfg_dur_pai').value = config.durasi['PAI'] || 90;
-                document.getElementById('cfg_dur_ipa').value = config.durasi['IPA'] || 120;
-                document.getElementById('cfg_dur_ing').value = config.durasi['Bahasa Inggris'] || 90;
+                document.getElementById('cfg_dur_mat').value = config.durasi['Matematika'] || 60;
+                document.getElementById('cfg_dur_pai').value = config.durasi['PAI'] || 60;
+                document.getElementById('cfg_dur_ipa').value = config.durasi['IPA'] || 60;
+                document.getElementById('cfg_dur_ing').value = config.durasi['Bahasa Inggris'] || 60;
+            }
+            if (config.skor) {
+                document.getElementById('cfg_skor_benar').value = config.skor.benar !== undefined ? config.skor.benar : 3;
+                document.getElementById('cfg_skor_salah').value = config.skor.salah !== undefined ? config.skor.salah : 0;
+                document.getElementById('cfg_skor_kosong').value = config.skor.kosong !== undefined ? config.skor.kosong : 0;
             }
         }
     }
@@ -91,6 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 'PAI': parseInt(document.getElementById('cfg_dur_pai').value),
                 'IPA': parseInt(document.getElementById('cfg_dur_ipa').value),
                 'Bahasa Inggris': parseInt(document.getElementById('cfg_dur_ing').value)
+            },
+            skor: {
+                benar: parseInt(document.getElementById('cfg_skor_benar').value),
+                salah: parseInt(document.getElementById('cfg_skor_salah').value),
+                kosong: parseInt(document.getElementById('cfg_skor_kosong').value)
             }
         };
 
@@ -488,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     async function loadPelanggaran() {
         const cabang = document.getElementById('filter-cabang-pelanggaran').value;
-        let query = supabaseClient.from('pelanggaran').select('*, peserta(nama, cabang)').order('created_at', { ascending: false }).limit(100);
+        let query = supabaseClient.from('pelanggaran').select('*, peserta(nama, cabang)').order('waktu', { ascending: false }).limit(100);
         
         const { data, error } = await query;
         if(error) return;
@@ -499,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cabang && p.peserta.cabang !== cabang) return;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${new Date(p.created_at).toLocaleString('id-ID')}</td>
+                <td>${new Date(p.waktu).toLocaleString('id-ID')}</td>
                 <td>${p.peserta.nama}</td>
                 <td>${p.peserta.cabang}</td>
                 <td>${p.jenis_pelanggaran}</td>
@@ -517,11 +527,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // MODULE: HASIL UJIAN
+    // MODULE: HASIL TES
     // ==========================================
     async function loadHasil() {
         const cabang = document.getElementById('filter-cabang-hasil').value;
-        const { data, error } = await supabaseClient.from('scoreboard_publik').select('*').eq('cabang', cabang);
+        const { data, error } = await supabaseClient.from('skor').select('*').eq('cabang', cabang).order('skor_akhir', { ascending: false }).order('durasi_detik', { ascending: true });
         if (error) return;
 
         const tbody = document.getElementById('tbody-hasil');
@@ -533,8 +543,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${r.nama}</td>
                 <td>${r.sekolah}</td>
                 <td>${r.benar} / ${r.salah} / ${r.kosong}</td>
-                <td>${r.durasi_pengerjaan}</td>
-                <td style="font-weight:bold; color:var(--primary)">${parseFloat(r.skor).toFixed(1)}</td>
+                <td>${r.durasi_detik}</td>
+                <td style="font-weight:bold; color:var(--primary)">${parseFloat(r.skor_akhir).toFixed(1)}</td>
             `;
             tbody.appendChild(tr);
         });
