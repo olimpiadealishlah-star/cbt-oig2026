@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan & Tata Tertib - CBT Al Ishlah</title>
+    <link rel="stylesheet" href="css/cbt.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/iframe-guard.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display: flex; gap: 10px; background-color: white; padding: 5px; border-radius: 8px;">
+                <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 40px;">
+                <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 40px;">
+            </div>
+            <h2 style="margin: 0; font-size: 1.25rem;">Olimpiade Al Ishlah</h2>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <span id="peserta-nama" style="margin-right: 15px; font-weight: 500;">...</span>
+            <button class="btn btn-outline" style="padding: 0.4rem 1rem; border-color: white; color: white;" onclick="window.cbtAuth.logout()">Keluar</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <h3 class="text-primary mb-3" style="text-align: center; font-size: 1.5rem; font-weight: 700;">Panduan Penggunaan & Tata Tertib Ujian</h3>
+            
+            <div style="background: var(--bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h4 style="color: #0f3f22; margin-bottom: 10px; font-size: 1.1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">1. Tata Tertib Pelaksanaan Olimpiade</h4>
+                <ul style="line-height: 1.6; padding-left: 20px; color: var(--text);">
+                    <li>Peserta wajib mengenakan pakaian seragam sekolah yang rapi dan sopan.</li>
+                    <li>Peserta wajib menjaga ketenangan dan kejujuran selama Olimpiade berlangsung.</li>
+                    <li>Ujian dilaksanakan secara <strong>tertutup (Closed Book)</strong>. Segala bentuk kecurangan akan didiskualifikasi.</li>
+                    <li>Peserta dilarang keras bertanya mengenai materi soal ujian kepada siapa pun (termasuk pengawas).</li>
+                    <li>Peserta yang terbukti melakukan pelanggaran akan langsung dikeluarkan dari ruang ujian dan nilainya dibatalkan.</li>
+                </ul>
+
+                <h4 style="color: #0f3f22; margin-top: 25px; margin-bottom: 10px; font-size: 1.1rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">2. Panduan Penggunaan Aplikasi CBT</h4>
+                <ul style="line-height: 1.6; padding-left: 20px; color: var(--text);">
+                    <li><strong>Layar Penuh (Fullscreen):</strong> Sistem mewajibkan Anda untuk mengerjakan ujian dalam mode Layar Penuh. Akses ke mode layar penuh akan dimulai saat Anda menekan tombol "Mulai Ujian" di halaman selanjutnya.</li>
+                    <li><strong>Larangan Berpindah Tab:</strong> Sistem secara otomatis melacak jika Anda membuka tab baru, mengecilkan browser, membuka aplikasi lain, atau membagi layar (split screen).</li>
+                    <li><strong>Sanksi Pelanggaran:</strong> Jika Anda keluar dari layar penuh atau berpindah aplikasi <strong>lebih dari 3 kali</strong>, ujian akan dihentikan paksa dan akun Anda akan terkunci.</li>
+                    <li><strong>Navigasi Soal:</strong> Gunakan panel kotak nomor soal di sebelah kanan/bawah layar untuk melompat ke nomor tertentu.</li>
+                    <li><strong>Ragu-ragu:</strong> Jika tidak yakin dengan jawaban, centang kotak "Ragu-ragu". Soal tersebut akan ditandai dengan warna kuning pada daftar nomor.</li>
+                    <li><strong>Submit Jawaban:</strong> Tombol pengumpulan akhir (Selesai Ujian) hanya akan muncul pada nomor urut soal terakhir. Pastikan semua soal telah terjawab sebelum menekan tombol Selesai.</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center;">
+                <p style="margin-bottom: 15px; font-weight: 600; color: #e74c3c;">Pastikan Anda telah membaca dan memahami seluruh aturan di atas.</p>
+                <a href="lobby.html" class="btn btn-primary" style="font-size: 1.1rem; padding: 12px 30px; display: inline-block;">Saya Mengerti & Lanjutkan</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const data = await window.cbtAuth.checkLobbyAccess();
+            if (!data) return; // redirect handled in checkLobbyAccess
+
+            const p = data.peserta;
+            if (p.status === 'mengerjakan') {
+                window.location.href = 'exam.html';
+                return;
+            } else if (p.status === 'selesai') {
+                window.location.href = 'selesai.html';
+                return;
+            } else if (p.status === 'terkunci') {
+                alert("Akun Anda terkunci. Hubungi pengawas.");
+                window.cbtAuth.logout();
+                return;
+            }
+
+            document.getElementById('peserta-nama').textContent = p.nama;
+        });
+    </script>
+</body>
+</html>
