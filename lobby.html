@@ -15,7 +15,7 @@
 <body>
     <div class="header-bar">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; background-color: white; padding: 5px; border-radius: 8px;">
                 <img src="https://iili.io/CNu9Bt9.png" alt="Logo Yayasan" style="height: 40px;">
                 <img src="https://iili.io/n17L7Q2.png" alt="Logo Milad 2026" style="height: 40px;">
             </div>
@@ -70,7 +70,7 @@
             document.getElementById('peserta-cabang').textContent = p.cabang;
             document.getElementById('peserta-sekolah').textContent = p.asal_sekolah;
             
-            const durasi = data.config.durasi[p.cabang] || 120;
+            const durasi = (data.config && data.config.durasi && data.config.durasi[p.cabang]) ? data.config.durasi[p.cabang] : 120;
             document.getElementById('info-durasi').textContent = durasi;
 
             // Tes Perangkat
