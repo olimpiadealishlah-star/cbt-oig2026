@@ -14,14 +14,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 50px;">#</th>
+                            <th style="width: 50px;">Rank</th>
                             <th>Nama Peserta</th>
                             <th>Asal Sekolah</th>
+                            <th style="text-align:center;">Waktu</th>
                             <th style="text-align:right;">Skor</th>
                         </tr>
                     </thead>
                     <tbody id="tbody-${c.replace(/\s+/g, '-')}">
-                        <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+                        <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -73,16 +74,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             const topRows = rows.slice(0, 10);
             
             if (topRows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">Belum ada skor</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#999;">Belum ada skor</td></tr>';
                 return;
             }
 
             topRows.forEach((r, idx) => {
                 const tr = document.createElement('tr');
+                const minutes = Math.floor(r.durasi / 60);
+                const seconds = r.durasi % 60;
+                const timeStr = `${minutes}m ${seconds}s`;
+                
                 tr.innerHTML = `
-                    <td>${idx + 1}</td>
-                    <td style="font-weight:600;">${r.nama}</td>
-                    <td>${r.sekolah}</td>
+                    <td style="font-weight: bold; font-size: 1.1rem; text-align: center;">
+                        ${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                    </td>
+                    <td style="font-weight:600; font-size: 1.1rem;">${r.nama}</td>
+                    <td style="color: var(--text-light);">${r.sekolah}</td>
+                    <td style="text-align:center; color: var(--text-light); font-variant-numeric: tabular-nums;">${timeStr}</td>
                     <td style="text-align:right;" class="score-val">${parseFloat(r.skor).toFixed(1)}</td>
                 `;
                 tbody.appendChild(tr);
