@@ -113,15 +113,7 @@
                 btnMulai.disabled = true;
                 btnMulai.textContent = 'Memproses...';
                 
-                // Coba masuk fullscreen dulu
-                const fsSuccess = await window.requestFullscreenSafe(document.documentElement);
-                if (!fsSuccess && window.self !== window.top) {
-                    alert("Tidak dapat memasuki layar penuh. Harap klik 'Buka di Tab Penuh' terlebih dahulu.");
-                    btnMulai.disabled = false;
-                    btnMulai.textContent = 'Mulai Ujian Sekarang';
-                    return;
-                }
-
+                // Hapus upaya fullscreen di sini, karena navigasi (window.location) akan membatalkan fullscreen
                 // Jitter
                 setTimeout(async () => {
                     const token = window.cbtAuth.getToken();
