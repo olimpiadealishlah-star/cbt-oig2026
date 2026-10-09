@@ -110,6 +110,26 @@
             e.preventDefault();
             reportViolation('INSPECT_SHORTCUT', 'Mencoba membuka inspect element atau shortcut terlarang');
         }
+
+        // Blokir PrintScreen
+        if (e.key === 'PrintScreen') {
+            navigator.clipboard.writeText('');
+            e.preventDefault();
+            reportViolation('SCREENSHOT', 'Mencoba mengambil tangkapan layar');
+        }
+
+        // Blokir Windows+Shift+S (Snipping Tool)
+        if (e.shiftKey && e.metaKey && (e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            reportViolation('SCREENSHOT', 'Mencoba mengambil tangkapan layar (Snipping Tool)');
+        }
+    });
+
+    document.addEventListener('keyup', e => {
+        if (e.key === 'PrintScreen') {
+            navigator.clipboard.writeText('');
+            reportViolation('SCREENSHOT', 'Mencoba mengambil tangkapan layar');
+        }
     });
 
     // Mencegah drag gambar

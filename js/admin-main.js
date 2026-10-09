@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             data.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td class="text-center"><input type="checkbox" class="cb-peserta" value="${p.id}"></td>
                     <td>${p.nama}</td>
                     <td>${p.username}</td>
                     <td>${p.cabang}</td>
@@ -139,6 +140,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     document.getElementById('btn-load-peserta').addEventListener('click', loadPeserta);
+
+    // Fitur Bulk Delete Peserta
+    document.getElementById('cb-all-peserta').addEventListener('change', (e) => {
+        const cbs = document.querySelectorAll('.cb-peserta');
+        cbs.forEach(cb => cb.checked = e.target.checked);
+        toggleBtnBulkDeletePeserta();
+    });
+
+    document.querySelector('#table-peserta tbody').addEventListener('change', (e) => {
+        if(e.target.classList.contains('cb-peserta')) toggleBtnBulkDeletePeserta();
+    });
+
+    function toggleBtnBulkDeletePeserta() {
+        const checked = document.querySelectorAll('.cb-peserta:checked').length;
+        document.getElementById('btn-hapus-terpilih-peserta').style.display = checked > 0 ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('btn-hapus-terpilih-peserta').addEventListener('click', async () => {
+        const checked = document.querySelectorAll('.cb-peserta:checked');
+        if (checked.length === 0) return;
+        if (confirm(`Yakin ingin menghapus ${checked.length} peserta terpilih beserta seluruh datanya?`)) {
+            const ids = Array.from(checked).map(cb => cb.value);
+            const { error } = await supabaseClient.from('peserta').delete().in('id', ids);
+            if (error) alert("Gagal menghapus: " + error.message);
+            else {
+                alert(`${checked.length} peserta dihapus.`);
+                document.getElementById('cb-all-peserta').checked = false;
+                toggleBtnBulkDeletePeserta();
+                loadPeserta();
+            }
+        }
+    });
 
     window.resetSesi = async (id) => {
         if (confirm("Reset sesi akan menghapus token dan membolehkan peserta login ulang tanpa menghapus jawaban tersimpan. Lanjutkan?")) {
@@ -281,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const kunci = s.kunci_soal ? s.kunci_soal.kunci : '?';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td class="text-center"><input type="checkbox" class="cb-soal" value="${s.id}"></td>
                     <td>${s.no}</td>
                     <td class="latex-render">${s.teks_soal.substring(0, 50)}...</td>
                     <td class="latex-render">${s.opsi_a}</td>
@@ -299,6 +333,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     document.getElementById('btn-load-soal').addEventListener('click', loadSoal);
+
+    // Fitur Bulk Delete Soal
+    document.getElementById('cb-all-soal').addEventListener('change', (e) => {
+        const cbs = document.querySelectorAll('.cb-soal');
+        cbs.forEach(cb => cb.checked = e.target.checked);
+        toggleBtnBulkDeleteSoal();
+    });
+
+    document.querySelector('#table-soal tbody').addEventListener('change', (e) => {
+        if(e.target.classList.contains('cb-soal')) toggleBtnBulkDeleteSoal();
+    });
+
+    function toggleBtnBulkDeleteSoal() {
+        const checked = document.querySelectorAll('.cb-soal:checked').length;
+        document.getElementById('btn-hapus-terpilih-soal').style.display = checked > 0 ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('btn-hapus-terpilih-soal').addEventListener('click', async () => {
+        const checked = document.querySelectorAll('.cb-soal:checked');
+        if (checked.length === 0) return;
+        if (confirm(`Yakin ingin menghapus ${checked.length} soal terpilih?`)) {
+            const ids = Array.from(checked).map(cb => cb.value);
+            const { error } = await supabaseClient.from('soal').delete().in('id', ids);
+            if (error) alert("Gagal menghapus: " + error.message);
+            else {
+                alert(`${checked.length} soal dihapus.`);
+                document.getElementById('cb-all-soal').checked = false;
+                toggleBtnBulkDeleteSoal();
+                loadSoal();
+            }
+        }
+    });
 
     // Import Soal
     document.getElementById('file-import-soal').addEventListener('change', async (e) => {
@@ -566,5 +632,34 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (viewId === 'monitoring') loadMonitoring();
         else if (viewId === 'pelanggaran') loadPelanggaran();
         else if (viewId === 'hasil') loadHasil();
+    }
+
+    // ==========================================
+    // MODULE: MANAJEMEN ADMIN
+    // ==========================================
+    const formAdmin = document.getElementById('form-tambah-admin');
+    if(formAdmin) {
+        formAdmin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-admin');
+            const user = document.getElementById('admin_new_user').value.trim();
+            const pass = document.getElementById('admin_new_pass').value;
+
+            btn.disabled = true; btn.textContent = "Menyimpan...";
+            const { data, error } = await supabaseClient.rpc('admin_tambah_admin', {
+                p_username: user,
+                p_password: pass
+            });
+            btn.disabled = false; btn.textContent = "Tambahkan Admin";
+            
+            if (error) {
+                alert("Gagal menambahkan admin: " + error.message + "\n\nPastikan Anda telah menjalankan skrip migrasi 003_admin_management.sql di Supabase SQL Editor.");
+            } else if (!data.success) {
+                alert("Gagal: " + data.message);
+            } else {
+                alert("Admin berhasil ditambahkan!\nUsername: " + user + "\nPassword: " + pass);
+                formAdmin.reset();
+            }
+        });
     }
 });

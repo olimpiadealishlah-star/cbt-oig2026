@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentIndex = 0;
     let waktuSelesai = null;
     let timerInterval = null;
-    let saveTimeout = null;
+    let activeSaves = 0;
 
     // Element Refs
     const elNo = document.getElementById('soal-aktif-no');
@@ -45,9 +45,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     jawabanMap = soalData.jawaban || {};
     waktuSelesai = new Date(soalData.waktu_selesai).getTime();
 
-    // Pastikan jawabanMap ada semua key
+    // Pastikan jawabanMap ada semua key dan acak opsi
+    const acakOpsi = infoData.config.acak_opsi !== false;
+    
     soalList.forEach(s => {
         if (!jawabanMap[s.id]) jawabanMap[s.id] = { jawaban: null, ragu: false };
+        
+        let validKeys = ['a', 'b', 'c', 'd', 'e'].filter(k => s[`opsi_${k}`] || s[`gambar_opsi_${k}`]);
+        if (validKeys.length === 0) validKeys = ['a', 'b', 'c', 'd', 'e'];
+        
+        if (acakOpsi) {
+            let seed = 0;
+            for (let i = 0; i < s.id.length; i++) seed += s.id.charCodeAt(i);
+            
+            let random = () => {
+                let x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            };
+            
+            for (let i = validKeys.length - 1; i > 0; i--) {
+                const j = Math.floor(random() * (i + 1));
+                [validKeys[i], validKeys[j]] = [validKeys[j], validKeys[i]];
+            }
+        }
+        s.opsiMap = validKeys;
     });
 
     renderGrid();
@@ -104,23 +125,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Render Opsi A-E
         elOpsiContainer.innerHTML = '';
-        const opsiKeys = ['a', 'b', 'c', 'd', 'e'];
-        opsiKeys.forEach(k => {
-            const keyLabel = k.toUpperCase();
-            const textVal = soal[`opsi_${k}`];
-            const imgVal = soal[`gambar_opsi_${k}`];
+        const uiLabels = ['a', 'b', 'c', 'd', 'e'];
+        const opsiKeys = soal.opsiMap || ['a', 'b', 'c', 'd', 'e'];
+        
+        opsiKeys.forEach((originalK, idx) => {
+            if (idx >= uiLabels.length) return;
+            const uiLabel = uiLabels[idx].toUpperCase();
+            const originalKLabel = originalK.toUpperCase();
+            const textVal = soal[`opsi_${originalK}`];
+            const imgVal = soal[`gambar_opsi_${originalK}`];
             
             if (textVal || imgVal) {
                 const optDiv = document.createElement('div');
                 optDiv.className = 'opsi-item';
-                if (jwbn.jawaban === keyLabel) optDiv.classList.add('selected');
+                if (jwbn.jawaban === originalKLabel) optDiv.classList.add('selected');
                 
                 let contentHtml = `<div class="opsi-text">${textVal || ''}</div>`;
                 if (imgVal) contentHtml += `<img src="${imgVal}" class="opsi-img">`;
 
-                optDiv.innerHTML = `<div class="opsi-label">${keyLabel}</div>${contentHtml}`;
+                optDiv.innerHTML = `<div class="opsi-label">${uiLabel}</div>${contentHtml}`;
                 
-                optDiv.onclick = () => selectJawaban(keyLabel);
+                optDiv.onclick = () => selectJawaban(originalKLabel);
                 elOpsiContainer.appendChild(optDiv);
             }
         });
@@ -167,23 +192,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(currentIndex < soalList.length - 1) loadSoal(currentIndex + 1);
     });
 
-    // 4. Autosave (Debounce)
-    function scheduleSimpan() {
+    // 4. Autosave (Tanpa Debounce agar data tidak hilang)
+    async function scheduleSimpan(soalIdOverride = null) {
         statusSimpan.textContent = 'Menyimpan...';
         statusSimpan.style.color = 'var(--text-light)';
-        if (saveTimeout) clearTimeout(saveTimeout);
         
-        const currentSoalId = soalList[currentIndex].id;
-        const currentJ = jawabanMap[currentSoalId];
+        const currentSoalId = soalIdOverride || soalList[currentIndex].id;
+        const currentJ = Object.assign({}, jawabanMap[currentSoalId]);
 
-        // Exponential backoff logic omitted for brevity, basic debounce used
-        saveTimeout = setTimeout(async () => {
-            const { error } = await supabaseClient.rpc('simpan_jawaban', {
-                p_token: token,
-                p_soal_id: currentSoalId,
-                p_jawaban: currentJ.jawaban,
-                p_ragu: currentJ.ragu
-            });
+        activeSaves++;
+
+        const { error } = await supabaseClient.rpc('simpan_jawaban', {
+            p_token: token,
+            p_soal_id: currentSoalId,
+            p_jawaban: currentJ.jawaban,
+            p_ragu: currentJ.ragu
+        });
+        
+        activeSaves--;
+        if (activeSaves === 0) {
             if (!error) {
                 statusSimpan.textContent = '✔Tersimpan';
                 statusSimpan.style.color = 'var(--success)';
@@ -191,7 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 statusSimpan.textContent = '✖Gagal menyimpan! Cek koneksi.';
                 statusSimpan.style.color = 'var(--danger)';
             }
-        }, 1500); // 1.5s debounce
+        }
     }
 
     // 5. Timer
@@ -273,6 +300,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(isSubmitting) return;
         isSubmitting = true;
         document.getElementById('btn-konfirm-submit').disabled = true;
+        document.getElementById('btn-konfirm-submit').textContent = 'Menyimpan sisa jawaban...';
+        
+        // Tunggu hingga semua save asinkronus selesai
+        while(activeSaves > 0) {
+            await new Promise(r => setTimeout(r, 200));
+        }
+
         document.getElementById('btn-konfirm-submit').textContent = 'Memproses...';
         
         const { error } = await supabaseClient.rpc('submit_ujian', { p_token: token });
