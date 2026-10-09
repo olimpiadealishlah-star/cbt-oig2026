@@ -8,13 +8,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnStartFullscreen = document.getElementById('btn-start-fullscreen');
     if (btnStartFullscreen) {
         btnStartFullscreen.addEventListener('click', async () => {
-            const fsSuccess = await window.requestFullscreenSafe(document.documentElement);
-            if (fsSuccess || window.self !== window.top) {
-                document.getElementById('start-overlay').style.display = 'none';
-                
-                // Jika audio/video otomatis diputar, bisa ditaruh di sini
+            // Cek dukungan API Fullscreen (iPhone biasanya tidak mendukung ini sama sekali di documentElement)
+            const isSupported = document.documentElement.requestFullscreen || 
+                                document.documentElement.webkitRequestFullscreen || 
+                                document.documentElement.msRequestFullscreen;
+
+            if (isSupported) {
+                const fsSuccess = await window.requestFullscreenSafe(document.documentElement);
+                if (fsSuccess || window.self !== window.top) {
+                    document.getElementById('start-overlay').style.display = 'none';
+                } else {
+                    // Jika API ada tapi eksekusi ditolak oleh browser
+                    const lanjut = confirm("Browser gagal mengaktifkan layar penuh. Lanjutkan tanpa layar penuh?");
+                    if (lanjut) document.getElementById('start-overlay').style.display = 'none';
+                }
             } else {
-                alert("Gagal masuk mode layar penuh. Pastikan browser Anda mengizinkannya.");
+                // Perangkat seperti iPhone/iOS Safari (Tidak ada API Fullscreen)
+                document.getElementById('start-overlay').style.display = 'none';
             }
         });
     }
