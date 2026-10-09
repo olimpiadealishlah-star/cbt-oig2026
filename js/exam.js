@@ -5,6 +5,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'login.html';
         return;
     }
+    const btnStartFullscreen = document.getElementById('btn-start-fullscreen');
+    if (btnStartFullscreen) {
+        btnStartFullscreen.addEventListener('click', async () => {
+            const fsSuccess = await window.requestFullscreenSafe(document.documentElement);
+            if (fsSuccess || window.self !== window.top) {
+                document.getElementById('start-overlay').style.display = 'none';
+                
+                // Jika audio/video otomatis diputar, bisa ditaruh di sini
+            } else {
+                alert("Gagal masuk mode layar penuh. Pastikan browser Anda mengizinkannya.");
+            }
+        });
+    }
 
     let soalList = [];
     let jawabanMap = {}; // { soal_id: { jawaban: 'A', ragu: false } }
