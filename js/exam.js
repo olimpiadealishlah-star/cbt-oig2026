@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let waktuSelesai = null;
     let timerInterval = null;
     let activeSaves = 0;
+    let currentFontSize = 1.25; // default size in rem
 
     // Element Refs
     const elNo = document.getElementById('soal-aktif-no');
@@ -138,6 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         elNo.textContent = index + 1;
         elTeks.innerHTML = soal.teks_soal;
+        elTeks.style.fontSize = currentFontSize + 'rem';
         
         if (soal.gambar_soal) {
             elImg.src = soal.gambar_soal;
@@ -163,8 +165,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optDiv.className = 'opsi-item';
                 if (jwbn.jawaban === originalKLabel) optDiv.classList.add('selected');
                 
-                let contentHtml = `<div class="opsi-text">${textVal || ''}</div>`;
-                if (imgVal) contentHtml += `<img src="${imgVal}" class="opsi-img">`;
+                let contentHtml = `<div class="opsi-text" style="font-size: ${currentFontSize - 0.15}rem;">${textVal || ''}</div>`;
+                if (imgVal) contentHtml += `<img src="${imgVal}" class="opsi-img" onclick="event.stopPropagation(); window.openZoom(this.src);">`;
 
                 optDiv.innerHTML = `<div class="opsi-label">${uiLabel}</div>${contentHtml}`;
                 
@@ -342,4 +344,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = 'selesai.html';
         }
     }
+
+    // 8. Pengaturan Ukuran Font
+    const fontStep = 0.15;
+    const maxFont = 2.0;
+    const minFont = 0.8;
+
+    document.getElementById('btn-font-inc').addEventListener('click', () => {
+        if (currentFontSize < maxFont) {
+            currentFontSize += fontStep;
+            document.getElementById('teks-soal').style.fontSize = currentFontSize + 'rem';
+            document.querySelectorAll('.opsi-text').forEach(el => el.style.fontSize = (currentFontSize - 0.15) + 'rem');
+        }
+    });
+
+    document.getElementById('btn-font-dec').addEventListener('click', () => {
+        if (currentFontSize > minFont) {
+            currentFontSize -= fontStep;
+            document.getElementById('teks-soal').style.fontSize = currentFontSize + 'rem';
+            document.querySelectorAll('.opsi-text').forEach(el => el.style.fontSize = (currentFontSize - 0.15) + 'rem');
+        }
+    });
+
+    // 9. Modal Zoom Gambar
+    const modalZoom = document.getElementById('modal-zoom');
+    const zoomedImg = document.getElementById('zoomed-img');
+    const closeZoomBtn = document.getElementById('close-zoom');
+
+    window.openZoom = function(src) {
+        if (!src) return;
+        zoomedImg.src = src;
+        modalZoom.classList.add('active');
+    };
+
+    closeZoomBtn.addEventListener('click', () => {
+        modalZoom.classList.remove('active');
+    });
+    modalZoom.addEventListener('click', (e) => {
+        if (e.target === modalZoom) {
+            modalZoom.classList.remove('active');
+        }
+    });
+
+    elImg.addEventListener('click', () => window.openZoom(elImg.src));
 });
