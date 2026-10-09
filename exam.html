@@ -48,7 +48,13 @@
     <div class="exam-layout">
         <!-- Area Soal (Kiri) -->
         <main class="soal-area">
-            <h3 class="text-primary" style="margin-bottom: 1rem;">Soal No. <span id="soal-aktif-no">1</span></h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="text-primary" style="margin-bottom: 0;">Soal No. <span id="soal-aktif-no">1</span></h3>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-outline" id="btn-font-dec" style="padding: 5px 10px; font-size: 0.9rem;" title="Perkecil Teks">A-</button>
+                    <button class="btn btn-outline" id="btn-font-inc" style="padding: 5px 10px; font-size: 0.9rem;" title="Perbesar Teks">A+</button>
+                </div>
+            </div>
             <div id="soal-container" class="latex-render">
                 <div class="soal-text" id="teks-soal">Memuat soal...</div>
                 <img id="gambar-soal" class="soal-img" style="display:none;" alt="Gambar Soal">
@@ -95,6 +101,14 @@
                 <button class="btn btn-outline" id="btn-batal-submit">Kembali ke Ujian</button>
                 <button class="btn btn-danger" id="btn-konfirm-submit">Ya, Selesai</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Zoom Gambar -->
+    <div class="overlay" id="modal-zoom">
+        <div class="modal">
+            <span class="close-zoom" id="close-zoom">&times;</span>
+            <img id="zoomed-img" src="" alt="Gambar Diperbesar">
         </div>
     </div>
 
