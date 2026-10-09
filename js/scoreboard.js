@@ -49,7 +49,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function fetchScores() {
-        const { data, error } = await supabaseClient.from('scoreboard_publik').select('*');
+        const { data, error } = await supabaseClient
+            .from('skor')
+            .select('nama, sekolah, cabang, skor_akhir, durasi_detik, waktu_submit')
+            .order('skor_akhir', { ascending: false })
+            .order('durasi_detik', { ascending: true });
+            
         if (error) {
             console.error("Gagal mengambil data skor:", error);
             return;
@@ -80,8 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             topRows.forEach((r, idx) => {
                 const tr = document.createElement('tr');
-                const minutes = Math.floor(r.durasi / 60);
-                const seconds = r.durasi % 60;
+                const minutes = Math.floor(r.durasi_detik / 60);
+                const seconds = r.durasi_detik % 60;
                 const timeStr = `${minutes}m ${seconds}s`;
                 
                 tr.innerHTML = `
@@ -91,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td style="font-weight:600; font-size: 1.1rem;">${r.nama}</td>
                     <td style="color: var(--text-light);">${r.sekolah}</td>
                     <td style="text-align:center; color: var(--text-light); font-variant-numeric: tabular-nums;">${timeStr}</td>
-                    <td style="text-align:right;" class="score-val">${parseFloat(r.skor).toFixed(1)}</td>
+                    <td style="text-align:right;" class="score-val">${parseFloat(r.skor_akhir).toFixed(1)}</td>
                 `;
                 tbody.appendChild(tr);
             });
