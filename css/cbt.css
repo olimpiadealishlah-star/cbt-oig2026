@@ -256,6 +256,8 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 2px solid var(--border);
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 /* Modals & Overlays */
@@ -286,6 +288,31 @@ input, textarea { -webkit-user-select: text; user-select: text; }
     transition: transform 0.3s;
 }
 .overlay.active .modal { transform: translateY(0); }
+
+/* Modal Zoom Gambar */
+#modal-zoom .modal {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    max-width: 90vw;
+    width: auto;
+}
+#modal-zoom img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+.close-zoom {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 2.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 1001;
+}
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
