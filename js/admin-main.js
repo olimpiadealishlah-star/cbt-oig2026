@@ -593,6 +593,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
+    // MODULE: PESERTA BELUM UJIAN
+    // ==========================================
+    async function loadBelumUjian() {
+        const cabang = document.getElementById('filter-cabang-belum').value;
+        const tbody = document.getElementById('tbody-belum');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px;">Memuat data...</td></tr>';
+
+        let query = supabaseClient.from('peserta').select('nama, username, cabang, asal_sekolah').eq('status', 'belum').order('cabang').order('nama');
+        if (cabang) query = query.eq('cabang', cabang);
+        
+        const { data, error } = await query;
+        if(error) { 
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Gagal memuat: ${error.message}</td></tr>`;
+            return; 
+        }
+
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Semua peserta pada cabang ini sudah/sedang mengerjakan ujian.</td></tr>';
+            return;
+        }
+
+        data.forEach((p, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${p.nama}</td>
+                <td>${p.username}</td>
+                <td>${p.cabang}</td>
+                <td>${p.asal_sekolah}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    const btnLoadBelum = document.getElementById('btn-load-belum');
+    if (btnLoadBelum) btnLoadBelum.addEventListener('click', loadBelumUjian);
+    const filterBelum = document.getElementById('filter-cabang-belum');
+    if (filterBelum) filterBelum.addEventListener('change', loadBelumUjian);
+
+    const btnExportBelum = document.getElementById('btn-export-belum');
+    if (btnExportBelum) {
+        btnExportBelum.addEventListener('click', () => {
+            const table = document.getElementById('table-belum');
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Belum Ujian"});
+            XLSX.writeFile(wb, `Peserta_Belum_Ujian.xlsx`);
+        });
+    }
+
+    // ==========================================
     // MODULE: HASIL TES & ANALISIS BUTIR SOAL
     // ==========================================
     function escapeHtml(str) {
