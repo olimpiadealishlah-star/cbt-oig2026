@@ -149,3 +149,38 @@ tr:hover { background: rgba(0,0,0,0.01); }
 .mt-3 { margin-top: 1rem; }
 .text-center { text-align: center; }
 .text-danger { color: var(--danger) !important; }
+.text-success { color: var(--success) !important; }
+
+/* Badges & Pills */
+.bg-success { background-color: var(--success); color: white; }
+.bg-danger { background-color: var(--danger); color: white; }
+.bg-warning { background-color: #f39c12; color: white; }
+.bg-secondary { background-color: #95a5a6; color: white; }
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-align: center;
+}
+.badge-benar { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.badge-salah { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.badge-kosong { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+
+/* Filter Buttons */
+.btn-outline.active-filter {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Modals */
+.modal {
+    animation: fadeIn 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
