@@ -109,6 +109,22 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .ranking-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding-bottom: 2rem;
+            }
+            .header h1 { font-size: 2.2rem; }
+            .header h3 { font-size: 1.2rem; }
+            .subject-header h2 { font-size: 1.5rem; }
+            .rank-item { padding: 0.8rem 1rem; }
+            .rank-number { font-size: 1.5rem; min-width: 35px; }
+            .student-name { font-size: 1rem; }
+            .header a { padding: 0.6rem 1rem; font-size: 0.9rem; }
+        }
+
         .subject-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             padding: 1.5rem;
