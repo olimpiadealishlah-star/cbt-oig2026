@@ -184,3 +184,68 @@ tr:hover { background: rgba(0,0,0,0.01); }
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header {
+        padding: 1rem;
+    }
+    .sidebar-nav {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .sidebar-nav::-webkit-scrollbar {
+        display: none;
+    }
+    .sidebar-nav li {
+        flex: 0 0 auto;
+    }
+    .sidebar-nav li a {
+        padding: 1rem;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+    }
+    .sidebar-nav li a:hover, .sidebar-nav li a.active {
+        background: transparent;
+        border-left: none;
+        border-bottom-color: var(--primary);
+    }
+    .main-content {
+        padding: 1rem;
+    }
+    .card {
+        padding: 1rem;
+    }
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    .d-flex.justify-content-between > div {
+        flex-direction: column;
+        width: 100%;
+    }
+    .d-flex.justify-content-between .btn, .d-flex.justify-content-between select {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    #form-pengaturan > div {
+        flex-direction: column;
+    }
+    #form-pengaturan .card {
+        flex: 1 1 100%;
+    }
+}
