@@ -51,26 +51,48 @@
         <main class="main-content">
             <!-- View: Dashboard -->
             <section id="view-dashboard" class="view-section active">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2>Dashboard</h2>
-                    <button class="btn btn-outline" id="btn-refresh-dashboard">Refresh</button>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Dashboard Utama</h2>
+                    <button class="btn btn-primary" id="btn-refresh-dashboard">🔄 Segarkan Data</button>
                 </div>
-                <div class="d-flex gap-3 mt-3">
-                    <div class="card" style="flex:1">
-                        <h4>Total Peserta</h4>
-                        <h2 id="dash-total-peserta">0</h2>
+                
+                <h4 style="margin-bottom: 1rem; color: var(--text-light); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Status Peserta Ujian</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin: 0; border-left: 4px solid #3498db; background: linear-gradient(to right, rgba(52, 152, 219, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Total Peserta</div>
+                        <h2 id="dash-total-peserta" style="margin: 0.5rem 0 0 0; color: #2c3e50; font-size: 2.5rem;">0</h2>
                     </div>
-                    <div class="card" style="flex:1">
-                        <h4>Sedang Mengerjakan</h4>
-                        <h2 id="dash-mengerjakan">0</h2>
+                    <div class="card" style="margin: 0; border-left: 4px solid #95a5a6; background: linear-gradient(to right, rgba(149, 165, 166, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Belum Mengerjakan</div>
+                        <h2 id="dash-belum" style="margin: 0.5rem 0 0 0; color: #7f8c8d; font-size: 2.5rem;">0</h2>
                     </div>
-                    <div class="card" style="flex:1">
-                        <h4>Selesai</h4>
-                        <h2 id="dash-selesai">0</h2>
+                    <div class="card" style="margin: 0; border-left: 4px solid #f39c12; background: linear-gradient(to right, rgba(243, 156, 18, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Sedang Mengerjakan</div>
+                        <h2 id="dash-mengerjakan" style="margin: 0.5rem 0 0 0; color: #f39c12; font-size: 2.5rem;">0</h2>
                     </div>
-                    <div class="card" style="flex:1">
-                        <h4>Total Pelanggaran</h4>
-                        <h2 id="dash-pelanggaran">0</h2>
+                    <div class="card" style="margin: 0; border-left: 4px solid #2ecc71; background: linear-gradient(to right, rgba(46, 204, 113, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Selesai Mengerjakan</div>
+                        <h2 id="dash-selesai" style="margin: 0.5rem 0 0 0; color: #2ecc71; font-size: 2.5rem;">0</h2>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 1rem; color: var(--text-light); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Informasi Sistem</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                    <div class="card" style="margin: 0; border-left: 4px solid #e74c3c; background: linear-gradient(to right, rgba(231, 76, 60, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Total Pelanggaran</div>
+                        <h2 id="dash-pelanggaran" style="margin: 0.5rem 0 0 0; color: #e74c3c; font-size: 2.5rem;">0</h2>
+                    </div>
+                    <div class="card" style="margin: 0; border-left: 4px solid #9b59b6; background: linear-gradient(to right, rgba(155, 89, 182, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Sekolah Terdaftar</div>
+                        <h2 id="dash-sekolah" style="margin: 0.5rem 0 0 0; color: #9b59b6; font-size: 2.5rem;">0</h2>
+                    </div>
+                    <div class="card" style="margin: 0; border-left: 4px solid #34495e; background: linear-gradient(to right, rgba(52, 73, 94, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Total Bank Soal</div>
+                        <h2 id="dash-soal" style="margin: 0.5rem 0 0 0; color: #34495e; font-size: 2.5rem;">0</h2>
+                    </div>
+                    <div class="card" style="margin: 0; border-left: 4px solid var(--primary); background: linear-gradient(to right, rgba(15, 90, 62, 0.05), white);">
+                        <div style="font-size: 0.9rem; color: #7f8c8d; font-weight: 600; text-transform: uppercase;">Mata Pelajaran Aktif</div>
+                        <h2 id="dash-mapel" style="margin: 0.5rem 0 0 0; color: var(--primary); font-size: 2.5rem;">4</h2>
                     </div>
                 </div>
             </section>
