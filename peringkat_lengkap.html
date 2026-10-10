@@ -235,7 +235,7 @@
                 <div class="filter-group">
                     <label for="filter-mapel">Mata Pelajaran (Cabang)</label>
                     <select id="filter-mapel">
-                        <option value="Semua">Semua Mata Pelajaran</option>
+                        <option value="" disabled selected>-- Pilih Mata Pelajaran --</option>
                         <option value="Matematika">Matematika</option>
                         <option value="PAI">PAI</option>
                         <option value="IPA">IPA</option>
@@ -251,27 +251,36 @@
                 </div>
             </div>
 
-            <div class="stats-summary">
-                <div class="stat-item">Total Peserta Tampil: <span id="stat-peserta">0</span></div>
+            <div id="welcome-section" style="padding: 4rem 2rem; text-align: center; color: var(--text-main);">
+                <h2 style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;">Selamat & Sukses kepada Seluruh Peserta! 🎉</h2>
+                <p style="font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 2rem; line-height: 1.6;">
+                    "Keberhasilan sejati dalam Olimpiade bukanlah semata-mata tentang medali yang diraih, melainkan tentang seberapa keras kita berusaha mengalahkan keraguan dan melampaui batas kemampuan diri kita sendiri. Teruslah memupuk ilmu dan jadilah generasi emas."
+                </p>
+                <div style="display: inline-block; padding: 0.8rem 1.5rem; background: rgba(15, 90, 62, 0.05); color: var(--primary); border-radius: 50px; font-weight: 600;">
+                    👆 Silakan pilih Mata Pelajaran di atas untuk melihat peringkat.
+                </div>
             </div>
 
-            <div class="table-responsive">
-                <table id="ranking-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px; text-align: center;">Rank</th>
-                            <th>Nama Peserta</th>
-                            <th>Asal Sekolah</th>
-                            <th>Mata Pelajaran</th>
-                            <th style="text-align: center;">Jawaban Benar</th>
-                            <th style="text-align: center;">Waktu</th>
-                            <th style="text-align: right;">Total Poin</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody-ranking">
-                        <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>
-                    </tbody>
-                </table>
+            <div id="table-container" style="display: none;">
+                <div class="stats-summary">
+                    <div class="stat-item">Total Peserta Tampil: <span id="stat-peserta">0</span></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="ranking-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px; text-align: center;">Rank</th>
+                                <th>Nama Peserta</th>
+                                <th>Asal Sekolah</th>
+                                <th>Mata Pelajaran</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-ranking">
+                            <tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
