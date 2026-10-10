@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Ranking - CBT Al Ishlah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <style>
+        :root {
+            --primary: #0F5A3E; 
+            --primary-light: #16865d;
+            --secondary: #D4AF37; 
+            --bg-light: #F1F5F9;
+            --surface: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .topbar-brand img {
+            height: 50px;
+        }
+
+        .topbar-title h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .topbar-title h3 {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #cbd5e1;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-card {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .filter-section {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 1.5rem;
+            background: #F8FAFC;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+            min-width: 250px;
+        }
+
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            background: white;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group select:focus {
+            border-color: var(--primary);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            min-height: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: white;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #F8FAFC;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: 700;
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        tr.top-1 .rank-badge { background: rgba(212, 175, 55, 0.2); color: #B8860B; }
+        tr.top-2 .rank-badge { background: rgba(148, 163, 184, 0.2); color: #64748B; }
+        tr.top-3 .rank-badge { background: rgba(184, 115, 51, 0.2); color: #A0522D; }
+
+        .btn-back {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-summary {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .stat-item {
+            background: #f8fafc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .stat-item span {
+            font-weight: 700;
+            color: var(--primary);
+            margin-left: 0.3rem;
+            font-size: 1.1rem;
+        }
+
+        @media(max-width: 768px) {
+            .topbar { flex-direction: column; gap: 1rem; text-align: center; }
+            .filter-section { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <div class="topbar-brand">
+            <img src="https://iili.io/CNu9Bt9.png" alt="Logo">
+            <div class="topbar-title">
+                <h1 id="event-name">Olimpiade Al Ishlah</h1>
+                <h3>DASHBOARD RANKING SELURUH PESERTA</h3>
+            </div>
+        </div>
+        <a href="pengumuman.html" class="btn-back">← Kembali ke 10 Besar</a>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-card">
+            
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="filter-mapel">Mata Pelajaran (Cabang)</label>
+                    <select id="filter-mapel">
+                        <option value="Semua">Semua Mata Pelajaran</option>
+                        <option value="Matematika">Matematika</option>
+                        <option value="PAI">PAI</option>
+                        <option value="IPA">IPA</option>
+                        <option value="Bahasa Inggris">Bahasa Inggris</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-sekolah">Asal Sekolah</label>
+                    <select id="filter-sekolah">
+                        <option value="Semua">Semua Sekolah</option>
+                        <!-- Dimuat otomatis via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="stats-summary">
+                <div class="stat-item">Total Peserta Tampil: <span id="stat-peserta">0</span></div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="ranking-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">Rank</th>
+                            <th>Nama Peserta</th>
+                            <th>Asal Sekolah</th>
+                            <th>Mata Pelajaran</th>
+                            <th style="text-align: center;">Jawaban Benar</th>
+                            <th style="text-align: center;">Waktu</th>
+                            <th style="text-align: right;">Total Poin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-ranking">
+                        <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/peringkat_lengkap.js"></script>
+</body>
+</html>
