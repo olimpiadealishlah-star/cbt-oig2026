@@ -593,34 +593,535 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // MODULE: HASIL TES
+    // MODULE: HASIL TES & ANALISIS BUTIR SOAL
     // ==========================================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    let currentDetailData = {
+        peserta: null,
+        cabang: '',
+        items: [],
+        skorConfig: { benar: 3, salah: 0, kosong: 0 }
+    };
+    let currentDetailFilter = 'all';
+
     async function loadHasil() {
         const cabang = document.getElementById('filter-cabang-hasil').value;
-        const { data, error } = await supabaseClient.from('skor').select('*').eq('cabang', cabang).order('skor_akhir', { ascending: false }).order('durasi_detik', { ascending: true });
-        if (error) return;
-
         const tbody = document.getElementById('tbody-hasil');
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding: 20px;">Memuat data hasil ujian...</td></tr>';
+
+        const { data, error } = await supabaseClient
+            .from('skor')
+            .select('*')
+            .eq('cabang', cabang)
+            .order('skor_akhir', { ascending: false })
+            .order('durasi_detik', { ascending: true });
+
+        if (error) {
+            console.error("Gagal load hasil:", error);
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger" style="padding: 20px;">Gagal memuat data: ${error.message}</td></tr>`;
+            return;
+        }
+
         tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding: 20px; color: var(--text-light);">Belum ada peserta yang menyelesaikan ujian pada cabang ini.</td></tr>';
+            return;
+        }
+
         data.forEach((r, idx) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${idx + 1}</td>
-                <td>${r.nama}</td>
-                <td>${r.sekolah}</td>
+                <td><strong>${escapeHtml(r.nama)}</strong></td>
+                <td>${escapeHtml(r.sekolah)}</td>
                 <td>${r.benar} / ${r.salah} / ${r.kosong}</td>
                 <td>${r.durasi_detik}</td>
                 <td style="font-weight:bold; color:var(--primary)">${parseFloat(r.skor_akhir).toFixed(1)}</td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn btn-sm btn-primary btn-lihat-detail"
+                        data-peserta-id="${r.peserta_id}"
+                        data-sesi-id="${r.sesi_id || ''}"
+                        data-nama="${escapeHtml(r.nama)}"
+                        data-sekolah="${escapeHtml(r.sekolah)}"
+                        data-cabang="${escapeHtml(r.cabang)}"
+                        data-skor="${r.skor_akhir}">
+                        Detail Jawaban
+                    </button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
     }
 
     document.getElementById('btn-load-hasil').addEventListener('click', loadHasil);
+    document.getElementById('filter-cabang-hasil').addEventListener('change', loadHasil);
+
+    // Event delegation tombol "Detail Jawaban"
+    document.getElementById('tbody-hasil').addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-lihat-detail');
+        if (!btn) return;
+        const { pesertaId, sesiId, nama, sekolah, cabang, skor } = btn.dataset;
+        bukaDetailJawaban(pesertaId, sesiId, nama, sekolah, cabang, skor);
+    });
+
+    // Modal Detail Jawaban Logic
+    const modalDetailJawaban = document.getElementById('modal-detail-jawaban');
+    const closeBtnDetailJawaban = document.getElementById('close-modal-detail-jawaban');
+    const tutupBtnDetailJawaban = document.getElementById('btn-tutup-detail-jawaban');
+
+    if (closeBtnDetailJawaban) {
+        closeBtnDetailJawaban.addEventListener('click', () => {
+            modalDetailJawaban.style.display = 'none';
+        });
+    }
+    if (tutupBtnDetailJawaban) {
+        tutupBtnDetailJawaban.addEventListener('click', () => {
+            modalDetailJawaban.style.display = 'none';
+        });
+    }
+
+    async function bukaDetailJawaban(pesertaId, sesiId, nama, sekolah, cabang, skorAkhir) {
+        modalDetailJawaban.style.display = 'flex';
+        
+        document.getElementById('detail-siswa-nama').textContent = nama;
+        document.getElementById('detail-siswa-info').textContent = `${sekolah} • Cabang ${cabang}`;
+        document.getElementById('detail-stat-benar').textContent = '...';
+        document.getElementById('detail-stat-salah').textContent = '...';
+        document.getElementById('detail-stat-kosong').textContent = '...';
+        document.getElementById('detail-stat-skor').textContent = parseFloat(skorAkhir || 0).toFixed(1);
+
+        const tbodyDetail = document.getElementById('tbody-detail-jawaban');
+        tbodyDetail.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 30px;">Mengambil data jawaban siswa...</td></tr>';
+
+        // 1. Dapatkan sesiId jika belum ada
+        if (!sesiId) {
+            const { data: sesiData } = await supabaseClient
+                .from('sesi')
+                .select('id')
+                .eq('peserta_id', pesertaId)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (sesiData) sesiId = sesiData.id;
+        }
+
+        // 2. Dapatkan config skor cabang
+        let skorConfig = { benar: 3, salah: 0, kosong: 0 };
+        try {
+            const { data: cfgRow } = await supabaseClient.from('config').select('value').eq('key', 'app_config').single();
+            if (cfgRow && cfgRow.value && cfgRow.value.skor) {
+                if (cfgRow.value.skor[cabang]) skorConfig = cfgRow.value.skor[cabang];
+                else if (typeof cfgRow.value.skor.benar === 'number') skorConfig = cfgRow.value.skor;
+            }
+        } catch (err) {
+            console.warn("Gagal membaca config skor:", err);
+        }
+
+        // 3. Ambil seluruh butir soal cabang tersebut
+        const { data: soalList, error: errSoal } = await supabaseClient
+            .from('soal')
+            .select('id, no, teks_soal, bobot, kunci_soal(kunci)')
+            .eq('cabang', cabang)
+            .order('no', { ascending: true });
+
+        if (errSoal || !soalList) {
+            tbodyDetail.innerHTML = `<tr><td colspan="6" class="text-center text-danger" style="padding: 20px;">Gagal memuat soal: ${errSoal ? errSoal.message : 'Soal tidak ditemukan'}</td></tr>`;
+            return;
+        }
+
+        // 4. Ambil jawaban siswa untuk sesi ini
+        let jawabanMap = {};
+        if (sesiId) {
+            const { data: jwbList } = await supabaseClient
+                .from('jawaban')
+                .select('soal_id, jawaban, ragu')
+                .eq('sesi_id', sesiId);
+            if (jwbList) {
+                jwbList.forEach(j => {
+                    jawabanMap[j.soal_id] = j;
+                });
+            }
+        }
+
+        // 5. Analisis per butir soal
+        let countBenar = 0;
+        let countSalah = 0;
+        let countKosong = 0;
+        let totalPoinKalkulasi = 0;
+        const items = [];
+
+        soalList.forEach(s => {
+            const jwbObj = jawabanMap[s.id] || null;
+            const jwbRaw = jwbObj && jwbObj.jawaban ? jwbObj.jawaban.trim() : null;
+            const kunciRaw = s.kunci_soal && s.kunci_soal.kunci ? s.kunci_soal.kunci.trim() : '-';
+            const bobot = s.bobot !== null && s.bobot !== undefined ? parseFloat(s.bobot) : 1;
+
+            let status = 'kosong';
+            let poin = 0;
+
+            if (!jwbRaw) {
+                status = 'kosong';
+                poin = (skorConfig.kosong !== undefined ? skorConfig.kosong : 0) * bobot;
+                countKosong++;
+            } else if (jwbRaw.toUpperCase() === kunciRaw.toUpperCase()) {
+                status = 'benar';
+                poin = (skorConfig.benar !== undefined ? skorConfig.benar : 3) * bobot;
+                countBenar++;
+            } else {
+                status = 'salah';
+                poin = (skorConfig.salah !== undefined ? skorConfig.salah : 0) * bobot;
+                countSalah++;
+            }
+            totalPoinKalkulasi += poin;
+
+            items.push({
+                soalId: s.id,
+                no: s.no,
+                teks: s.teks_soal || '',
+                jawabanSiswa: jwbRaw ? jwbRaw.toUpperCase() : '-',
+                kunci: kunciRaw.toUpperCase(),
+                status: status,
+                poin: poin,
+                ragu: jwbObj ? !!jwbObj.ragu : false
+            });
+        });
+
+        currentDetailData = {
+            peserta: { id: pesertaId, sesiId, nama, sekolah, cabang, skorAkhir: skorAkhir || totalPoinKalkulasi },
+            cabang,
+            items,
+            skorConfig
+        };
+
+        document.getElementById('detail-stat-benar').textContent = countBenar;
+        document.getElementById('detail-stat-salah').textContent = countSalah;
+        document.getElementById('detail-stat-kosong').textContent = countKosong;
+        document.getElementById('detail-stat-skor').textContent = parseFloat(skorAkhir !== undefined && skorAkhir !== '' ? skorAkhir : totalPoinKalkulasi).toFixed(1);
+
+        document.getElementById('count-all').textContent = items.length;
+        document.getElementById('count-benar').textContent = countBenar;
+        document.getElementById('count-salah').textContent = countSalah;
+        document.getElementById('count-kosong').textContent = countKosong;
+
+        // Reset filter ke 'all'
+        currentDetailFilter = 'all';
+        document.querySelectorAll('.btn-filter-detail').forEach(b => {
+            b.classList.toggle('active-filter', b.dataset.filter === 'all');
+        });
+
+        renderDetailTable('all');
+    }
+
+    function renderDetailTable(filter) {
+        currentDetailFilter = filter;
+        const tbodyDetail = document.getElementById('tbody-detail-jawaban');
+        tbodyDetail.innerHTML = '';
+
+        const filtered = currentDetailData.items.filter(item => {
+            if (filter === 'all') return true;
+            return item.status === filter;
+        });
+
+        if (filtered.length === 0) {
+            tbodyDetail.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 25px; color: var(--text-light);">Tidak ada butir soal dengan status "${filter}".</td></tr>`;
+            return;
+        }
+
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            
+            let statusBadge = '';
+            let jawabanDisplay = '';
+
+            if (item.status === 'benar') {
+                statusBadge = '<span class="badge badge-benar">Benar</span>';
+                jawabanDisplay = `<strong class="text-success" style="font-size: 1.1rem;">${escapeHtml(item.jawabanSiswa)}</strong>`;
+            } else if (item.status === 'salah') {
+                statusBadge = '<span class="badge badge-salah">Salah</span>';
+                jawabanDisplay = `<strong class="text-danger" style="font-size: 1.1rem;">${escapeHtml(item.jawabanSiswa)}</strong>`;
+            } else {
+                statusBadge = '<span class="badge badge-kosong">Kosong</span>';
+                jawabanDisplay = '<span style="color: #95a5a6; font-style: italic;">(Tidak dijawab)</span>';
+            }
+
+            if (item.ragu) {
+                jawabanDisplay += ' <span class="badge bg-warning" style="font-size: 0.7rem; padding: 1px 5px; vertical-align: middle;">Ragu</span>';
+            }
+
+            // Cuplikan teks soal
+            let teksSnippet = escapeHtml(item.teks);
+            if (teksSnippet.length > 140) {
+                teksSnippet = teksSnippet.substring(0, 140) + '...';
+            }
+
+            tr.innerHTML = `
+                <td style="text-align: center; font-weight: 600;">${item.no}</td>
+                <td class="latex-render" style="font-size: 0.95rem;">${teksSnippet}</td>
+                <td style="text-align: center;">${jawabanDisplay}</td>
+                <td style="text-align: center; font-weight: bold; color: var(--primary); font-size: 1.1rem;">${escapeHtml(item.kunci)}</td>
+                <td style="text-align: center;">${statusBadge}</td>
+                <td style="text-align: center; font-weight: 600;">${item.poin >= 0 ? '+' : ''}${item.poin}</td>
+            `;
+            tbodyDetail.appendChild(tr);
+        });
+
+        if (window.renderMathInElement) {
+            renderMathInElement(tbodyDetail, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ]
+            });
+        }
+    }
+
+    // Filter Buttons Listener
+    const filterDetailContainer = document.getElementById('filter-detail-status');
+    if (filterDetailContainer) {
+        filterDetailContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-filter-detail');
+            if (!btn) return;
+            document.querySelectorAll('.btn-filter-detail').forEach(b => b.classList.remove('active-filter'));
+            btn.classList.add('active-filter');
+            renderDetailTable(btn.dataset.filter);
+        });
+    }
+
+    // Export Excel Rincian Siswa Tunggal
+    document.getElementById('btn-export-detail-siswa').addEventListener('click', () => {
+        if (!currentDetailData.peserta || currentDetailData.items.length === 0) {
+            alert("Data rincian siswa belum dimuat.");
+            return;
+        }
+
+        const p = currentDetailData.peserta;
+        const b = document.getElementById('detail-stat-benar').textContent;
+        const s = document.getElementById('detail-stat-salah').textContent;
+        const k = document.getElementById('detail-stat-kosong').textContent;
+
+        const rows = [
+            ["RINCIAN HASIL PENGERJAAN BUTIR SOAL"],
+            ["Event", "Milad Yayasan Al Ishlah 2026 - CBT"],
+            ["Nama Siswa", p.nama],
+            ["Asal Sekolah", p.sekolah],
+            ["Cabang Lomba", p.cabang],
+            ["Rekap Hasil", `Benar: ${b} | Salah: ${s} | Kosong: ${k}`],
+            ["Skor Akhir", parseFloat(p.skorAkhir).toFixed(1)],
+            [],
+            ["No", "Teks Soal", "Jawaban Siswa", "Kunci Jawaban", "Status", "Poin"]
+        ];
+
+        currentDetailData.items.forEach(item => {
+            rows.push([
+                item.no,
+                item.teks,
+                item.jawabanSiswa,
+                item.kunci,
+                item.status.toUpperCase(),
+                item.poin
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, "Rincian Jawaban");
+        const safeName = p.nama.replace(/[^a-zA-Z0-9_-]/g, '_');
+        XLSX.writeFile(wb, `Rincian_Jawaban_${safeName}_${p.cabang}.xlsx`);
+    });
+
+    // Ekspor Rekap Hasil Ringkas
     document.getElementById('btn-export-hasil').addEventListener('click', () => {
         const table = document.getElementById('table-hasil');
-        const wb = XLSX.utils.table_to_book(table, {sheet: "Hasil"});
-        XLSX.writeFile(wb, `Hasil_Ujian_${document.getElementById('filter-cabang-hasil').value}.xlsx`);
+        const cabang = document.getElementById('filter-cabang-hasil').value;
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Rekap Hasil" });
+        XLSX.writeFile(wb, `Rekap_Hasil_Ujian_${cabang}.xlsx`);
+    });
+
+    // Ekspor Analisis Butir Soal (Matriks Excel Komprehensif)
+    document.getElementById('btn-export-matriks-hasil').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-export-matriks-hasil');
+        const cabang = document.getElementById('filter-cabang-hasil').value;
+        const originalText = btn.textContent;
+
+        try {
+            btn.disabled = true;
+            btn.textContent = "Mengunduh Data...";
+
+            // 1. Ambil seluruh skor cabang terpilih
+            const { data: listSkor, error: errSkor } = await supabaseClient
+                .from('skor')
+                .select('*')
+                .eq('cabang', cabang)
+                .order('skor_akhir', { ascending: false })
+                .order('durasi_detik', { ascending: true });
+
+            if (errSkor || !listSkor || listSkor.length === 0) {
+                alert("Tidak ada data hasil ujian yang dapat diekspor untuk cabang ini.");
+                return;
+            }
+
+            // 2. Ambil seluruh soal untuk cabang ini
+            const { data: listSoal, error: errSoal } = await supabaseClient
+                .from('soal')
+                .select('id, no, bobot, kunci_soal(kunci)')
+                .eq('cabang', cabang)
+                .order('no', { ascending: true });
+
+            if (errSoal || !listSoal || listSoal.length === 0) {
+                alert("Data butir soal untuk cabang ini tidak ditemukan.");
+                return;
+            }
+
+            // 3. Ambil seluruh sesi_id peserta
+            const sesiIds = listSkor.map(s => s.sesi_id).filter(Boolean);
+            
+            // 4. Ambil jawaban seluruh siswa
+            let allJawaban = [];
+            const chunkSize = 200;
+            for (let i = 0; i < sesiIds.length; i += chunkSize) {
+                const chunk = sesiIds.slice(i, i + chunkSize);
+                const { data: jwbChunk, error: errJwb } = await supabaseClient
+                    .from('jawaban')
+                    .select('sesi_id, soal_id, jawaban')
+                    .in('sesi_id', chunk)
+                    .range(0, 9999);
+                if (jwbChunk) allJawaban = allJawaban.concat(jwbChunk);
+            }
+
+            // Buat map: sesiId -> { soalId: jawaban }
+            const jawabanBySesi = {};
+            allJawaban.forEach(j => {
+                if (!jawabanBySesi[j.sesi_id]) jawabanBySesi[j.sesi_id] = {};
+                jawabanBySesi[j.sesi_id][j.soal_id] = j.jawaban ? j.jawaban.trim().toUpperCase() : '';
+            });
+
+            // Siapkan Worksheets
+            const wb = XLSX.utils.book_new();
+
+            // SHEET 1: Matriks Jawaban Siswa (Huruf A/B/C/D/E)
+            const headersS1 = ['Peringkat', 'Nama Siswa', 'Asal Sekolah'];
+            listSoal.forEach(s => headersS1.push(`No ${s.no}`));
+            headersS1.push('Benar', 'Salah', 'Kosong', 'Skor Akhir', 'Durasi (dtk)');
+
+            const rowsS1 = [headersS1];
+
+            // Baris Kunci
+            const rowKunciS1 = ['KUNCI JAWABAN', '-', '-'];
+            listSoal.forEach(s => {
+                rowKunciS1.push(s.kunci_soal && s.kunci_soal.kunci ? s.kunci_soal.kunci.toUpperCase() : '-');
+            });
+            rowKunciS1.push('-', '-', '-', '-', '-');
+            rowsS1.push(rowKunciS1);
+
+            // Statistik per butir soal untuk Sheet 3
+            const statSoal = {};
+            listSoal.forEach(s => {
+                statSoal[s.id] = {
+                    no: s.no,
+                    kunci: s.kunci_soal && s.kunci_soal.kunci ? s.kunci_soal.kunci.toUpperCase() : '-',
+                    benar: 0,
+                    salah: 0,
+                    kosong: 0
+                };
+            });
+
+            // SHEET 2: Matriks B/S (1 = Benar, 0 = Kosong/Salah)
+            const headersS2 = ['Peringkat', 'Nama Siswa', 'Asal Sekolah'];
+            listSoal.forEach(s => headersS2.push(`No ${s.no}`));
+            headersS2.push('Total Benar', 'Total Salah', 'Total Kosong', 'Skor Akhir');
+            const rowsS2 = [headersS2];
+
+            // Isi Data Setiap Siswa
+            listSkor.forEach((peserta, idx) => {
+                const jwbPesertaMap = jawabanBySesi[peserta.sesi_id] || {};
+
+                const rowSiswaS1 = [idx + 1, peserta.nama, peserta.sekolah];
+                const rowSiswaS2 = [idx + 1, peserta.nama, peserta.sekolah];
+
+                listSoal.forEach(s => {
+                    const jwb = jwbPesertaMap[s.id] || '';
+                    const kunci = s.kunci_soal && s.kunci_soal.kunci ? s.kunci_soal.kunci.toUpperCase() : '';
+
+                    rowSiswaS1.push(jwb || '-');
+
+                    if (!jwb) {
+                        rowSiswaS2.push(0);
+                        statSoal[s.id].kosong++;
+                    } else if (jwb === kunci) {
+                        rowSiswaS2.push(1);
+                        statSoal[s.id].benar++;
+                    } else {
+                        rowSiswaS2.push(0);
+                        statSoal[s.id].salah++;
+                    }
+                });
+
+                rowSiswaS1.push(peserta.benar, peserta.salah, peserta.kosong, parseFloat(peserta.skor_akhir), peserta.durasi_detik);
+                rowSiswaS2.push(peserta.benar, peserta.salah, peserta.kosong, parseFloat(peserta.skor_akhir));
+
+                rowsS1.push(rowSiswaS1);
+                rowsS2.push(rowSiswaS2);
+            });
+
+            // SHEET 3: Analisis Tingkat Kesukaran Butir Soal
+            const headersS3 = [
+                'No Soal',
+                'Kunci Jawaban',
+                'Jumlah Menjawab Benar',
+                'Jumlah Menjawab Salah',
+                'Jumlah Kosong',
+                'Total Peserta',
+                'Tingkat Kemudahan (% Benar)',
+                'Kategori Tingkat Kesukaran'
+            ];
+            const rowsS3 = [headersS3];
+
+            const totalPesertaCount = listSkor.length;
+            listSoal.forEach(s => {
+                const st = statSoal[s.id];
+                const pctBenar = totalPesertaCount > 0 ? (st.benar / totalPesertaCount) * 100 : 0;
+                let kategori = 'Sedang';
+                if (pctBenar >= 70) kategori = 'Mudah';
+                else if (pctBenar < 30) kategori = 'Sukar';
+
+                rowsS3.push([
+                    st.no,
+                    st.kunci,
+                    st.benar,
+                    st.salah,
+                    st.kosong,
+                    totalPesertaCount,
+                    parseFloat(pctBenar.toFixed(1)) + '%',
+                    kategori
+                ]);
+            });
+
+            // Append sheets
+            const ws1 = XLSX.utils.aoa_to_sheet(rowsS1);
+            const ws2 = XLSX.utils.aoa_to_sheet(rowsS2);
+            const ws3 = XLSX.utils.aoa_to_sheet(rowsS3);
+
+            XLSX.utils.book_append_sheet(wb, ws1, "Matriks Jawaban Siswa");
+            XLSX.utils.book_append_sheet(wb, ws2, "Matriks Skor B-S");
+            XLSX.utils.book_append_sheet(wb, ws3, "Analisis Butir Soal");
+
+            XLSX.writeFile(wb, `Analisis_Butir_Soal_${cabang}_Milad2026.xlsx`);
+        } catch (err) {
+            console.error("Gagal ekspor matriks:", err);
+            alert("Terjadi kesalahan saat mengekspor matriks: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     });
 
     // View loader map
