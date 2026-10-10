@@ -41,6 +41,7 @@
                 <li><a href="#monitoring" class="nav-link" data-view="monitoring">Monitoring Live</a></li>
                 <li><a href="#pelanggaran" class="nav-link" data-view="pelanggaran">Log Pelanggaran</a></li>
                 <li><a href="#hasil" class="nav-link" data-view="hasil">Hasil Tes</a></li>
+                <li><a href="#belum-ujian" class="nav-link" data-view="belum_ujian">Peserta Belum Ujian</a></li>
                 <li><a href="#admin_manajemen" class="nav-link" data-view="admin_manajemen">Manajemen Admin</a></li>
                 <li><a href="#" id="btn-logout" class="nav-link text-danger">Keluar</a></li>
             </ul>
@@ -446,6 +447,42 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-hasil"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Peserta Belum Ujian -->
+            <section id="view-belum_ujian" class="view-section" style="display: none;">
+                <h2>Peserta Belum Ujian</h2>
+                <div class="card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-2">
+                            <select id="filter-cabang-belum" class="form-control" style="max-width: 200px;">
+                                <option value="">Semua Cabang</option>
+                                <option value="Matematika">Matematika</option>
+                                <option value="PAI">PAI</option>
+                                <option value="IPA">IPA</option>
+                                <option value="Bahasa Inggris">Bahasa Inggris</option>
+                            </select>
+                            <button class="btn btn-primary" id="btn-load-belum">Tampilkan</button>
+                        </div>
+                        <button class="btn btn-outline" id="btn-export-belum">Ekspor Excel</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="table-belum">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama</th>
+                                    <th>Username</th>
+                                    <th>Cabang</th>
+                                    <th>Asal Sekolah</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-belum">
+                                <tr><td colspan="5" class="text-center" style="padding: 20px;">Silakan klik Tampilkan untuk memuat data.</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
