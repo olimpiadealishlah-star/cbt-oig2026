@@ -33,19 +33,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // MODULE: DASHBOARD
     // ==========================================
     async function loadDashboard() {
-        // Ambil rekap data. Bisa dengan query sederhana
         try {
             const { count: totalPeserta } = await supabaseClient.from('peserta').select('*', { count: 'exact', head: true });
+            const { count: belum } = await supabaseClient.from('peserta').select('*', { count: 'exact', head: true }).eq('status', 'belum');
             const { count: mengerjakan } = await supabaseClient.from('peserta').select('*', { count: 'exact', head: true }).eq('status', 'mengerjakan');
             const { count: selesai } = await supabaseClient.from('peserta').select('*', { count: 'exact', head: true }).eq('status', 'selesai');
             const { count: pelanggaran } = await supabaseClient.from('pelanggaran').select('*', { count: 'exact', head: true });
+            const { count: totalSoal } = await supabaseClient.from('soal').select('*', { count: 'exact', head: true });
+
+            // Fetch unique schools & mapel
+            const { data: sekolahData } = await supabaseClient.from('peserta').select('asal_sekolah, cabang');
+            const uniqueSekolah = new Set();
+            const uniqueMapel = new Set();
+            
+            if (sekolahData) {
+                sekolahData.forEach(p => {
+                    if (p.asal_sekolah) uniqueSekolah.add(p.asal_sekolah.trim().toLowerCase());
+                    if (p.cabang) uniqueMapel.add(p.cabang);
+                });
+            }
 
             document.getElementById('dash-total-peserta').textContent = totalPeserta || 0;
+            document.getElementById('dash-belum').textContent = belum || 0;
             document.getElementById('dash-mengerjakan').textContent = mengerjakan || 0;
             document.getElementById('dash-selesai').textContent = selesai || 0;
             document.getElementById('dash-pelanggaran').textContent = pelanggaran || 0;
+            document.getElementById('dash-sekolah').textContent = uniqueSekolah.size || 0;
+            document.getElementById('dash-soal').textContent = totalSoal || 0;
+            document.getElementById('dash-mapel').textContent = uniqueMapel.size || 0;
         } catch (e) {
-            console.error(e);
+            console.error("Gagal load dashboard", e);
         }
     }
     document.getElementById('btn-refresh-dashboard').addEventListener('click', loadDashboard);
